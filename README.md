@@ -101,6 +101,6 @@ go build -o pulse-server main.go
 
 ## 📜 License
 
-See [LICENSE](./LICENSE) for details.
+Released under the Unlicense. See [LICENSE](./LICENSE) for details.
 
 Built for joy and expressive infrastructure.
