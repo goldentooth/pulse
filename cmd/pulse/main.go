@@ -56,6 +56,10 @@ func main() {
 	http.HandleFunc("/api/nodes", handleNodes)
 	http.HandleFunc("/api/data", handlePulse)
 
+	// Serve static files (frontend)
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/", fs)
+
 	// Start HTTP server
 	port := "5173"
 	log.Printf("Starting server on port %s...", port)
