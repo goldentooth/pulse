@@ -45,11 +45,11 @@ func main() {
 	// TODO: Start ping loop here (goroutines, ticker, etc.)
 
 	// Register API routes
-	http.HandleFunc("/nodes", handleNodes)
-	http.HandleFunc("/pulse", handlePulse)
+	http.HandleFunc("/api/nodes", handleNodes)
+	http.HandleFunc("/api/data", handlePulse)
 
 	// Start HTTP server
-	port := "8080"
+	port := "5173"
 	log.Printf("Starting server on port %s...", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

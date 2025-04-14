@@ -6,7 +6,7 @@ GoldenTooth Pulse is a minimal visualization of real-time signals from a 10-node
 
 ## 📸 Demo
 
-> Visit: [https://pulse.goldentooth.net](https://pulse.goldentooth.net)  
+> Visit: [https://pulse.goldentooth.net](https://pulse.goldentooth.net)
 > (Coming soon — April 2025)
 
 Each node:
@@ -60,13 +60,15 @@ Example:
 ```json
 [
   {
-    "name": "Allyrion",
+    "name": "allyrion",
     "ip": "10.4.0.10",
     "theme": {
       "primary": "#dc143c",
-      "secondary": "#ffcccb"
+      "secondary": "#ffcccb",
+      "tertiary": "#aabbcc"
     }
-  }
+  },
+  ...
 ]
 ```
 
@@ -77,7 +79,7 @@ This can be:
 
 ## 🚀 Deployment
 
-This repo is intended to be deployed via Argo CD to `pulse.goldentooth.net`.  
+This repo is intended to be deployed via Argo CD to `pulse.goldentooth.net`.
 See `deploy/argocd.yaml` for application definition.
 
 Production build:
@@ -87,8 +89,8 @@ cd frontend
 npm run build
 
 # Build Go binary with embedded frontend
-cd ../backend
-go build -o pulse-server main.go
+cd ../cmd/pulse
+go build -o pulse main.go
 ```
 
 ## 📋 TODO
