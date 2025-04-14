@@ -12,7 +12,13 @@ async function fetchNodes() {
   nodes = await res.json();
   layoutNodes();
   nodes.forEach(node => {
-    pulseState[node.name] = { current: 30, target: 30, velocity: 0 };
+    pulseState[node.name] = {
+      current: 30,
+      target: 30,
+      velocity: 0,
+      // Cumulative drift phase based on latency-induced offset
+      driftPhase: 0
+    };
   });
 }
 
@@ -25,6 +31,16 @@ async function fetchPulse() {
     const latency = data?.latency ?? 0;
     const latencyScale = scaleLatency(latency);
     pulseState[node.name].target = 30 + latencyScale;
+
+    // If lastUpdate is available, use it to estimate drift phase (relative to local time)
+    const now = Date.now();
+    const lastUpdate = new Date(data?.lastUpdate).getTime();
+    const driftMs = now - lastUpdate;
+    const driftSec = driftMs / 1000;
+    const pulseSpeed = 0.08;
+    // Accumulate drift based on latency over time
+    const driftIncrement = (latency / 1e6) * pulseSpeed; // Convert ns to ms, then scale
+    pulseState[node.name].driftPhase += driftIncrement;
   });
 }
 
@@ -65,7 +81,8 @@ function drawNodes() {
 
     const pulseAmplitude = 3;
     const pulseSpeed = 0.08;
-    const pulseOffset = Math.sin(time * pulseSpeed) * pulseAmplitude;
+    const phase = state.driftPhase ?? 0;
+    const pulseOffset = Math.sin(time * pulseSpeed + phase) * pulseAmplitude;
 
     // Spring-like overshoot behavior
     const stiffness = 0.1;
