@@ -3,12 +3,17 @@ const ctx = canvas.getContext('2d');
 resizeCanvas();
 
 let nodes = [];
+let pulseData = {};
 
 async function fetchNodes() {
   const res = await fetch('/api/nodes');
   nodes = await res.json();
   layoutNodes();
-  drawNodes();
+}
+
+async function fetchPulse() {
+  const res = await fetch('/api/data');
+  pulseData = await res.json();
 }
 
 function resizeCanvas() {
@@ -19,7 +24,6 @@ function resizeCanvas() {
 window.addEventListener('resize', () => {
   resizeCanvas();
   layoutNodes();
-  drawNodes();
 });
 
 function layoutNodes() {
@@ -37,14 +41,31 @@ function layoutNodes() {
 function drawNodes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   nodes.forEach(node => {
+    const data = pulseData[node.name];
+    const alive = data?.available ?? false;
+    const latency = data?.latency ?? 0;
+    const baseRadius = 30;
+    const pulseRadius = baseRadius + Math.min(latency / 4, 30); // scale latency to 0–30px
+
     ctx.beginPath();
-    ctx.arc(node.x, node.y, 30, 0, 2 * Math.PI);
-    ctx.fillStyle = node.theme.primary || '#ffffff';
+    ctx.arc(node.x, node.y, pulseRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = alive ? node.theme.primary : '#333';
     ctx.fill();
-    ctx.strokeStyle = node.theme.secondary || '#888888';
     ctx.lineWidth = 3;
+    ctx.strokeStyle = alive ? node.theme.secondary : '#111';
     ctx.stroke();
   });
 }
 
-fetchNodes();
+async function tick() {
+  await fetchPulse();
+  drawNodes();
+}
+
+async function start() {
+  await fetchNodes();
+  await tick();
+  setInterval(tick, 1000);
+}
+
+start();
