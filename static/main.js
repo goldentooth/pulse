@@ -12,7 +12,7 @@ async function fetchNodes() {
   nodes = await res.json();
   layoutNodes();
   nodes.forEach(node => {
-    pulseState[node.name] = { current: 30, target: 30 };
+    pulseState[node.name] = { current: 30, target: 30, velocity: 0 };
   });
 }
 
@@ -62,24 +62,29 @@ function drawNodes() {
     const data = pulseData[node.name];
     const state = pulseState[node.name];
     const alive = data?.available ?? false;
-    const baseRadius = state.current;
 
-    const pulseAmplitude = 5;
-    const pulseSpeed = 0.05;
+    const pulseAmplitude = 3;
+    const pulseSpeed = 0.08;
     const pulseOffset = Math.sin(time * pulseSpeed) * pulseAmplitude;
+
+    // Spring-like overshoot behavior
+    const stiffness = 0.1;
+    const damping = 0.4;
+    const delta = state.target - state.current;
+    state.velocity += stiffness * delta;
+    state.velocity *= damping;
+    state.current += state.velocity;
+
+    const baseRadius = state.current;
     const pulseRadius = baseRadius + pulseOffset;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, pulseRadius, 0, 2 * Math.PI);
     ctx.fillStyle = alive ? node.theme.primary : '#333';
     ctx.fill();
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = alive ? node.theme.secondary : '#111';
     ctx.stroke();
-
-    // Animate current radius toward target (easing)
-    const delta = state.target - state.current;
-    state.current += delta * 0.07; // easing factor
   });
 }
 
@@ -96,7 +101,7 @@ function animate() {
 async function start() {
   await fetchNodes();
   await tick();
-  setInterval(tick, 500);
+  setInterval(tick, 250);
   animate();
 }
 
