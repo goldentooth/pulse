@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -31,8 +34,11 @@ type PulseData struct {
 	LastUpdate time.Time     `json:"lastUpdate"`
 }
 
-var nodes []Node
-var pulseMap map[string]PulseData
+var (
+	nodes    []Node
+	pulseMap map[string]PulseData
+	mutex    sync.RWMutex
+)
 
 func main() {
 	// Load config
@@ -43,7 +49,8 @@ func main() {
 	// Init pulse map
 	pulseMap = make(map[string]PulseData)
 
-	// TODO: Start ping loop here (goroutines, ticker, etc.)
+	// Start ping loop
+	go startPingLoop()
 
 	// Register API routes
 	http.HandleFunc("/api/nodes", handleNodes)
@@ -68,5 +75,47 @@ func handleNodes(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePulse(w http.ResponseWriter, r *http.Request) {
+	mutex.RLock()
+	defer mutex.RUnlock()
 	json.NewEncoder(w).Encode(pulseMap)
+}
+
+func startPingLoop() {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		<-ticker.C
+		for _, node := range nodes {
+			go pingNode(node)
+		}
+	}
+}
+
+func pingNode(node Node) {
+	addr := fmt.Sprintf("%s:%d", node.IP, node.Port)
+	start := time.Now()
+	conn, err := net.DialTimeout("tcp", addr, 2*time.Second)
+	latency := time.Since(start)
+	if err != nil {
+		mutex.Lock()
+		pulseMap[node.Name] = PulseData{
+			Name:       node.Name,
+			Latency:    0,
+			Available:  false,
+			LastUpdate: time.Now(),
+		}
+		mutex.Unlock()
+		return
+	}
+	conn.Close()
+
+	mutex.Lock()
+	pulseMap[node.Name] = PulseData{
+		Name:       node.Name,
+		Latency:    latency,
+		Available:  true,
+		LastUpdate: time.Now(),
+	}
+	mutex.Unlock()
 }
