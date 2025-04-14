@@ -1,0 +1,92 @@
+[
+  {
+    "name": "allyrion",
+    "ip": "10.4.0.10",
+    "theme": {
+      "primary": "#AF0000",
+      "secondary": "#FFD700",
+      "tertiary": "#5F0000"
+    }
+  },
+  {
+    "name": "bettley",
+    "ip": "10.4.0.11",
+    "theme": {
+      "primary": "#FFD700",
+      "secondary": "#000087",
+      "tertiary": "#875F00"
+    }
+  },
+  {
+    "name": "cargyll",
+    "ip": "10.4.0.12",
+    "theme": {
+      "primary": "#AF0000",
+      "secondary": "#FFD700",
+      "tertiary": "#5F5F00"
+    }
+  },
+  {
+    "name": "dalt",
+    "ip": "10.4.0.13",
+    "theme": {
+      "primary": "#AF00AF",
+      "secondary": "#D7D700",
+      "tertiary": "#005F00"
+    }
+  },
+  {
+    "name": "erenford",
+    "ip": "10.4.0.14",
+    "theme": {
+      "primary": "#FF8787",
+      "secondary": "#FFD700",
+      "tertiary": "#875F5F"
+    }
+  },
+  {
+    "name": "fenn",
+    "ip": "10.4.0.15",
+    "theme": {
+      "primary": "#AF87D7",
+      "secondary": "#D70000",
+      "tertiary": "#AFFFFF"
+    }
+  },
+  {
+    "name": "gardener",
+    "ip": "10.4.0.16",
+    "theme": {
+      "primary": "#008700",
+      "secondary": "#878787",
+      "tertiary": "#87AF87"
+    }
+  },
+  {
+    "name": "harlton",
+    "ip": "10.4.0.17",
+    "theme": {
+      "primary": "#008700",
+      "secondary": "#D7D7D7",
+      "tertiary": "#878787"
+    }
+  },
+  {
+    "name": "inchfield",
+    "ip": "10.4.0.18",
+    "theme": {
+      "primary": "#878787",
+      "secondary": "#5F5F5F",
+      "tertiary": "#878787"
+    }
+  },
+  {
+    "name": "jast",
+    "ip": "10.4.0.19",
+    "theme": {
+      "primary": "#FFFF00",
+      "secondary": "#5F5F00",
+      "tertiary": "#AFAFAF"
+    }
+  }
+]
