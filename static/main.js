@@ -38,6 +38,13 @@ function layoutNodes() {
   });
 }
 
+function scaleLatency(latency) {
+  // Normalize with a logarithmic scale to make differences more visible
+  if (latency <= 0) return 0;
+  const logLatency = Math.log10(latency);
+  return Math.min((logLatency - 6) * 10, 30); // Range approx: [0-30]
+}
+
 function drawNodes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   nodes.forEach(node => {
@@ -45,7 +52,7 @@ function drawNodes() {
     const alive = data?.available ?? false;
     const latency = data?.latency ?? 0;
     const baseRadius = 30;
-    const pulseRadius = baseRadius + Math.min(latency / 4, 30); // scale latency to 0–30px
+    const pulseRadius = baseRadius + scaleLatency(latency);
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, pulseRadius, 0, 2 * Math.PI);
