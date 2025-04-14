@@ -4,17 +4,28 @@ resizeCanvas();
 
 let nodes = [];
 let pulseData = {};
+let pulseState = {};
 let time = 0;
 
 async function fetchNodes() {
   const res = await fetch('/api/nodes');
   nodes = await res.json();
   layoutNodes();
+  nodes.forEach(node => {
+    pulseState[node.name] = { current: 30, target: 30 };
+  });
 }
 
 async function fetchPulse() {
   const res = await fetch('/api/data');
   pulseData = await res.json();
+
+  nodes.forEach(node => {
+    const data = pulseData[node.name];
+    const latency = data?.latency ?? 0;
+    const latencyScale = scaleLatency(latency);
+    pulseState[node.name].target = 30 + latencyScale;
+  });
 }
 
 function resizeCanvas() {
@@ -40,24 +51,23 @@ function layoutNodes() {
 }
 
 function scaleLatency(latency) {
-  // Normalize with a logarithmic scale to make differences more visible
   if (latency <= 0) return 0;
   const logLatency = Math.log10(latency);
-  return Math.min((logLatency - 6) * 10, 30); // Range approx: [0-30]
+  return Math.min((logLatency - 6) * 10, 30);
 }
 
 function drawNodes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   nodes.forEach(node => {
     const data = pulseData[node.name];
+    const state = pulseState[node.name];
     const alive = data?.available ?? false;
-    const latency = data?.latency ?? 0;
-    const baseRadius = 30;
-    const latencyScale = scaleLatency(latency);
+    const baseRadius = state.current;
+
     const pulseAmplitude = 5;
     const pulseSpeed = 0.05;
-    const pulseOffset = Math.sin(time * pulseSpeed + latency * 0.00001) * pulseAmplitude;
-    const pulseRadius = baseRadius + latencyScale + pulseOffset;
+    const pulseOffset = Math.sin(time * pulseSpeed) * pulseAmplitude;
+    const pulseRadius = baseRadius + pulseOffset;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, pulseRadius, 0, 2 * Math.PI);
@@ -66,6 +76,10 @@ function drawNodes() {
     ctx.lineWidth = 3;
     ctx.strokeStyle = alive ? node.theme.secondary : '#111';
     ctx.stroke();
+
+    // Animate current radius toward target (easing)
+    const delta = state.target - state.current;
+    state.current += delta * 0.07; // easing factor
   });
 }
 
@@ -82,7 +96,7 @@ function animate() {
 async function start() {
   await fetchNodes();
   await tick();
-  setInterval(tick, 1000);
+  setInterval(tick, 500);
   animate();
 }
 

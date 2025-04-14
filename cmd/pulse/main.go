@@ -85,7 +85,7 @@ func handlePulse(w http.ResponseWriter, r *http.Request) {
 }
 
 func startPingLoop() {
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
 
 	for {
@@ -99,7 +99,7 @@ func startPingLoop() {
 func pingNode(node Node) {
 	addr := fmt.Sprintf("%s:%d", node.IP, node.Port)
 	start := time.Now()
-	conn, err := net.DialTimeout("tcp", addr, 2*time.Second)
+	conn, err := net.DialTimeout("tcp", addr, 2000*time.Millisecond)
 	latency := time.Since(start)
 	if err != nil {
 		mutex.Lock()
