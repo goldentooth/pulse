@@ -4,6 +4,7 @@ resizeCanvas();
 
 let nodes = [];
 let pulseData = {};
+let time = 0;
 
 async function fetchNodes() {
   const res = await fetch('/api/nodes');
@@ -52,7 +53,11 @@ function drawNodes() {
     const alive = data?.available ?? false;
     const latency = data?.latency ?? 0;
     const baseRadius = 30;
-    const pulseRadius = baseRadius + scaleLatency(latency);
+    const latencyScale = scaleLatency(latency);
+    const pulseAmplitude = 5;
+    const pulseSpeed = 0.05;
+    const pulseOffset = Math.sin(time * pulseSpeed + latency * 0.00001) * pulseAmplitude;
+    const pulseRadius = baseRadius + latencyScale + pulseOffset;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, pulseRadius, 0, 2 * Math.PI);
@@ -66,13 +71,19 @@ function drawNodes() {
 
 async function tick() {
   await fetchPulse();
+}
+
+function animate() {
   drawNodes();
+  time++;
+  requestAnimationFrame(animate);
 }
 
 async function start() {
   await fetchNodes();
   await tick();
   setInterval(tick, 1000);
+  animate();
 }
 
 start();
