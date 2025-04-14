@@ -19,6 +19,7 @@ type ColorTheme struct {
 type Node struct {
 	Name  string     `json:"name"`
 	IP    string     `json:"ip"`
+	Port  int        `json:"port"`
 	Theme ColorTheme `json:"theme"`
 }
 
