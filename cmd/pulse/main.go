@@ -110,10 +110,10 @@ func pingNode(node Node) time.Duration {
 		mutex.Lock()
 		pulseMap[node.Name] = PulseData{
 			Name:         node.Name,
-			Latency:      latency,
-			Available:    true,
+			Latency:      0,
+			Available:    false,
 			LastUpdate:   time.Now(),
-			NextPingWait: time.Duration(float64(latency) * 1.5),
+			NextPingWait: 0,
 		}
 		mutex.Unlock()
 		return 2000 * time.Millisecond // fallback latency for delay calc
@@ -122,10 +122,11 @@ func pingNode(node Node) time.Duration {
 
 	mutex.Lock()
 	pulseMap[node.Name] = PulseData{
-		Name:       node.Name,
-		Latency:    latency,
-		Available:  true,
-		LastUpdate: time.Now(),
+		Name:         node.Name,
+		Latency:      latency,
+		Available:    true,
+		LastUpdate:   time.Now(),
+		NextPingWait: time.Duration(float64(latency) * 1.5),
 	}
 	mutex.Unlock()
 
