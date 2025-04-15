@@ -28,10 +28,11 @@ type Node struct {
 
 // PulseData holds real-time status info for a node
 type PulseData struct {
-	Name       string        `json:"name"`
-	Latency    time.Duration `json:"latency"`
-	Available  bool          `json:"available"`
-	LastUpdate time.Time     `json:"lastUpdate"`
+	Name         string        `json:"name"`
+	Latency      time.Duration `json:"latency"`
+	Available    bool          `json:"available"`
+	LastUpdate   time.Time     `json:"lastUpdate"`
+	NextPingWait time.Duration `json:"nextPingWait"`
 }
 
 var (
@@ -49,8 +50,8 @@ func main() {
 	// Init pulse map
 	pulseMap = make(map[string]PulseData)
 
-	// Start ping loop
-	go startPingLoop()
+	// Start per-node ping loops
+	startPerNodePingers()
 
 	// Register API routes
 	http.HandleFunc("/api/nodes", handleNodes)
@@ -84,19 +85,23 @@ func handlePulse(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(pulseMap)
 }
 
-func startPingLoop() {
-	ticker := time.NewTicker(200 * time.Millisecond)
-	defer ticker.Stop()
-
-	for {
-		<-ticker.C
-		for _, node := range nodes {
-			go pingNode(node)
-		}
+func startPerNodePingers() {
+	for _, node := range nodes {
+		n := node
+		go func() {
+			for {
+				latency := pingNode(n)
+				delay := time.Duration(float64(latency) * 1.5)
+				if delay < 100*time.Millisecond {
+					delay = 100 * time.Millisecond
+				}
+				time.Sleep(delay)
+			}
+		}()
 	}
 }
 
-func pingNode(node Node) {
+func pingNode(node Node) time.Duration {
 	addr := fmt.Sprintf("%s:%d", node.IP, node.Port)
 	start := time.Now()
 	conn, err := net.DialTimeout("tcp", addr, 2000*time.Millisecond)
@@ -104,13 +109,14 @@ func pingNode(node Node) {
 	if err != nil {
 		mutex.Lock()
 		pulseMap[node.Name] = PulseData{
-			Name:       node.Name,
-			Latency:    0,
-			Available:  false,
-			LastUpdate: time.Now(),
+			Name:         node.Name,
+			Latency:      latency,
+			Available:    true,
+			LastUpdate:   time.Now(),
+			NextPingWait: time.Duration(float64(latency) * 1.5),
 		}
 		mutex.Unlock()
-		return
+		return 2000 * time.Millisecond // fallback latency for delay calc
 	}
 	conn.Close()
 
@@ -122,4 +128,6 @@ func pingNode(node Node) {
 		LastUpdate: time.Now(),
 	}
 	mutex.Unlock()
+
+	return latency
 }
