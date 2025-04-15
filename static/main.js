@@ -32,7 +32,7 @@ async function fetchPulse() {
     const latencyScale = scaleLatency(latency);
     pulseState[node.name].target = 30 + latencyScale;
 
-    const pulseSpeed = 0.08;
+    const pulseSpeed = 0.8;
     const driftIncrement = (latency / 1e6) * pulseSpeed;
     pulseState[node.name].driftPhase += driftIncrement;
   });
@@ -68,20 +68,20 @@ function scaleLatency(latency) {
 
 function drawNodes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.globalAlpha = 0.15; // ghost wash layer
+  ctx.globalAlpha = 0.2; // ghost wash layer
 
   nodes.forEach(node => {
     const data = pulseData[node.name];
     const state = pulseState[node.name];
     const alive = data?.available ?? false;
 
-    const pulseAmplitude = 0.03;
-    const pulseSpeed = 2;
+    const pulseAmplitude = 0.3;
+    const pulseSpeed = 0.002;
     const phase = state.driftPhase ?? 0;
     const pulseOffset = Math.sin(time * pulseSpeed + phase) * pulseAmplitude;
 
-    const stiffness = 0.001;
-    const damping = 0.001;
+    const stiffness = 0.4;
+    const damping = 0.8;
     const delta = state.target - state.current;
     state.velocity += stiffness * delta;
     state.velocity *= damping;
@@ -101,7 +101,7 @@ function drawNodes() {
     ctx.fill();
   });
 
-  ctx.globalAlpha = 1.0; // reset
+  ctx.globalAlpha = 0.5; // reset
 
   nodes.forEach(node => {
     const data = pulseData[node.name];
@@ -109,7 +109,7 @@ function drawNodes() {
     const alive = data?.available ?? false;
 
     const baseRadius = state.current;
-    const pulseAmplitude = 3;
+    const pulseAmplitude = 15;
     const pulseSpeed = 0.08;
     const phase = state.driftPhase ?? 0;
     const pulseOffset = Math.sin(time * pulseSpeed + phase) * pulseAmplitude;
@@ -117,9 +117,12 @@ function drawNodes() {
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, pulseRadius, 0, 2 * Math.PI);
+    const intensity = 0.0 + 0.1 * Math.abs(pulseOffset / pulseAmplitude); // pulse-modulated opacity
     ctx.fillStyle = alive ? node.theme.primary : '#333';
+    ctx.globalAlpha = intensity;
     ctx.fill();
-    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.2;
+    ctx.lineWidth = 0;
     ctx.strokeStyle = alive ? node.theme.secondary : '#111';
     ctx.stroke();
   });
@@ -138,7 +141,7 @@ function animate() {
 async function start() {
   await fetchNodes();
   await tick();
-  setInterval(tick, 250);
+  setInterval(tick, 1000);
   animate();
 }
 
