@@ -32,14 +32,8 @@ async function fetchPulse() {
     const latencyScale = scaleLatency(latency);
     pulseState[node.name].target = 30 + latencyScale;
 
-    // If lastUpdate is available, use it to estimate drift phase (relative to local time)
-    const now = Date.now();
-    const lastUpdate = new Date(data?.lastUpdate).getTime();
-    const driftMs = now - lastUpdate;
-    const driftSec = driftMs / 1000;
     const pulseSpeed = 0.08;
-    // Accumulate drift based on latency over time
-    const driftIncrement = (latency / 1e6) * pulseSpeed; // Convert ns to ms, then scale
+    const driftIncrement = (latency / 1e6) * pulseSpeed;
     pulseState[node.name].driftPhase += driftIncrement;
   });
 }
@@ -74,25 +68,51 @@ function scaleLatency(latency) {
 
 function drawNodes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.globalAlpha = 0.15; // ghost wash layer
+
   nodes.forEach(node => {
     const data = pulseData[node.name];
     const state = pulseState[node.name];
     const alive = data?.available ?? false;
 
-    const pulseAmplitude = 3;
-    const pulseSpeed = 0.08;
+    const pulseAmplitude = 0.03;
+    const pulseSpeed = 2;
     const phase = state.driftPhase ?? 0;
     const pulseOffset = Math.sin(time * pulseSpeed + phase) * pulseAmplitude;
 
-    // Spring-like overshoot behavior
-    const stiffness = 0.1;
-    const damping = 0.4;
+    const stiffness = 0.001;
+    const damping = 0.001;
     const delta = state.target - state.current;
     state.velocity += stiffness * delta;
     state.velocity *= damping;
     state.current += state.velocity;
 
     const baseRadius = state.current;
+    const pulseRadius = baseRadius + pulseOffset;
+
+    // Outer wash effect
+    const waveRadius = pulseRadius * 10 + (Math.sin(time * pulseSpeed + phase) * pulseAmplitude);
+    const gradient = ctx.createRadialGradient(node.x, node.y, pulseRadius, node.x, node.y, waveRadius);
+    gradient.addColorStop(0, alive ? node.theme.primary : '#333');
+    gradient.addColorStop(1, 'transparent');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, waveRadius, 0, 2 * Math.PI);
+    ctx.fill();
+  });
+
+  ctx.globalAlpha = 1.0; // reset
+
+  nodes.forEach(node => {
+    const data = pulseData[node.name];
+    const state = pulseState[node.name];
+    const alive = data?.available ?? false;
+
+    const baseRadius = state.current;
+    const pulseAmplitude = 3;
+    const pulseSpeed = 0.08;
+    const phase = state.driftPhase ?? 0;
+    const pulseOffset = Math.sin(time * pulseSpeed + phase) * pulseAmplitude;
     const pulseRadius = baseRadius + pulseOffset;
 
     ctx.beginPath();
