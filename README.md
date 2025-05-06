@@ -6,8 +6,8 @@ GoldenTooth Pulse is a minimal visualization of real-time signals from a 10-node
 
 ## 📸 Demo
 
-> Visit: [https://pulse.goldentooth.net](https://pulse.goldentooth.net)
-> (Coming soon — April 2025)
+> Visit: [https://pulse.home-proxy.goldentooth.net](https://pulse.home-proxy.goldentooth.net)
+> (Coming soon — May 2025)
 
 Each node:
 - Emits a pulse based on live ping responses
