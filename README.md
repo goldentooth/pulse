@@ -2,7 +2,7 @@
 
 _Infrastructure and Network conditions visualized as a heartbeat_
 
-GoldenTooth Pulse is a minimal visualization of real-time signals from a 10-node Raspberry Pi cluster. Each node is pinged regularly by a Go backend, and its latency, clock drift, and availability are rendered in a visually expressive, canvas-based frontend. The result is an ambient, living representation of the cluster’s internal rhythm — glowing, rippling, and reacting in real time.
+Goldentooth Pulse is a minimal visualization of real-time signals from a 10-node Raspberry Pi cluster. Each node is pinged regularly by a Go backend, and its latency, clock drift, and availability are rendered in a visually expressive, canvas-based frontend. The result is an ambient, living representation of the cluster’s internal rhythm — glowing, rippling, and reacting in real time.
 
 ## 📸 Demo
 
